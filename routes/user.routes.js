@@ -69,7 +69,7 @@ router.get("/validatingUser", checkToken, (req, res) => {
                     return res.status(404).json(errors)
                 }
                 else {
-                    // console.log(info)
+                    console.log("-- - - - - ACTIVE USER - - - - - -",info)
                     res.json(info)
                 }
             }).catch(err => {
@@ -83,14 +83,14 @@ router.get("/validatingUser", checkToken, (req, res) => {
         const restrictions = { _id: 1 }
         User.findOne(req.query)
             .then(friend => {
-                console.log(friend)
-                const { _id } = friend
-                res.json({ _id, userId })
+                console.log(" == = = = ==FRIEND = = = == = ",friend)
+                console.log(" == = = = ==ACTIVE USER= = = == = ",userId)
+                const { _id, name, email, avatar } = friend
+                res.json({ _id, name, email, avatar, userId })
             })
             .catch(e => console.log(e))
     }
-}
-);
+});
 
 router.post("/register", (req, res) => {
     const { errors, isValid } = validateRegisterInput(req.body);
@@ -134,66 +134,10 @@ router.post("/register", (req, res) => {
     });
 });
 
-router.get("/friendsInfo",(req,res)=>{
-    // const arr = JSON.parse(req.query.data)
-    let key = 0
-    const {contactID, status} = req.query
-    console.log(req.query)
-    User.findOne({_id:contactID})
-        .then(user => {
-            console.log("friend ------",user)
-            const info = {user};
-            info.status = status
-            console.log("friend with STATUS - - - - - -",info)
-            res.json(info)
-        })
-    .catch(e => console.log(e))
-    })
-
-
-
-
-
-// router.get("/friendsInfo", (req, res) => {
-//     console.log("req.query -- ", req.query)
-//     let friend = {};
-//     for (const key in req.query) {
-//         if (req.query.hasOwnProperty(key)) {
-//             const element = JSON.parse(req.query[key]);
-//             // console.log(element) //getting every element of the array as an OBJECT
-            
-//             // function x(a){
-//                 friend = findData(element)
-//                 console.log(typeof a)
-//                 console.log(" - - - FRIEND - - - TO SEND BACK-",friend)
-//                 res.json(friend)
-//             // }
-//             // x(friend)
-//         }
-//     }
-// })
-
-// const findData = (elem) => {
-//     console.log("- elem - \n", elem)
-//     let fullFriend ={};
-//     User.findOne({ _id: elem.contactID }, { _id: 0, password: 0, date: 0 })
-//         .then((info) => {
-//             if (!info) {
-//                 console.log("info WASN'T FOUND")
-//                 return res.status(404).json(errors)
-//             }
-//             else {
-//                 fullFriend = { info };
-//                 fullFriend.status = elem.status
-//                 console.log(" - full friend - ",fullFriend)
-//                 // SHOULD BE RETURNING THE WHOLE INFO FOR A FRIEND
-//             }
-//         })
-//         .catch(err => {
-//             console.log('ERRORS, NOT FOUND =======>>>>>>>>>>>>>>>>>>>>>>>>>>', err);
-//             return err;
-//         })
-//         return fullFriend
-// }
+router.post("/friendsInfo", (req, res) => {
+    User.find( { _id: {$in : req.body}},{password:0,date:0} )
+    .then(response => res.json(response))
+    .catch(e=>console.log(e))
+})
 
 module.exports = router;
