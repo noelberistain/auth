@@ -11,7 +11,6 @@ const secret = require('../config/secret');
 const User = require("../models/User.model");
 
 router.post("/login", (req, res) => {
-    // console.log(req.body)
     const { errors, isValid } = validateLoginInput(req.body);
 
     if (!isValid) return res.status(400).json(errors);
@@ -33,9 +32,10 @@ router.post("/login", (req, res) => {
                     (err, token) => {
                         if (err) console.error("There is some error in token", err);
                         else {
+                            // let x = { name, avatar, email, _id} = user
+                            res.cookie('jwToken',token,{httpOnly:true})
                             res.json({
-                                success: true,
-                                token,
+                                success: true
                             });
                         }
                     }
@@ -45,21 +45,20 @@ router.post("/login", (req, res) => {
                 return res.status(400).json(errors);
             }
         });
-    });
+    })
+    // .then(res=>{res.json('fdsa')})?
 });
 
 router.get("/validatingUser", checkToken, (req, res) => {
     let userId = '';
-    jwt.verify(req.body, secret.key, (err, authorizedData) => {
+    jwt.verify(req.token, secret.key, (err, authorizedData) => {
         //If token is successfully verified, we can send the autorized data 
-        if (err) {
-            console.log(err)
-        }
+        if (err) console.log(err)
         else {
             userId = authorizedData.id;
         }
     })
-
+console.log("req.query = \n",req.query, "user ID= \n",userId)
     if (Object.entries(req.query).length === 0 && req.query.constructor === Object) {
         console.log("verifyn ACTIVE user")
         User.findOne({ _id: userId }, { password: 0, date: 0 })
@@ -69,22 +68,22 @@ router.get("/validatingUser", checkToken, (req, res) => {
                     return res.status(404).json(errors)
                 }
                 else {
-                    console.log("-- - - - - ACTIVE USER - - - - - -",info)
+                    console.log("-- - - - - - - - - - - - - -\n",info)
                     res.json(info)
                 }
             }).catch(err => {
                 console.log('ERRORS, NOT FOUND =======>>>>>>>>>>>>>>>>>>>>>>>>>>', err);
-                return err;
+                return res.json(err);
             })
-
     }
     else {
         console.log("find-return data from sended user", req.query)
-        const restrictions = { _id: 1 }
         User.findOne(req.query)
             .then(friend => {
-                console.log(" == = = = ==FRIEND = = = == = ",friend)
-                console.log(" == = = = ==ACTIVE USER= = = == = ",userId)
+                if(!friend){
+                    res.json(' DOESNT EXIST AT CHAT APP ')
+                }
+                console.log(friend)
                 const { _id, name, email, avatar } = friend
                 res.json({ _id, name, email, avatar, userId })
             })

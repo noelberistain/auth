@@ -4,8 +4,7 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 const config = require("./config/db");
 const router = require("./routes/user.routes");
-// const http = require("http").Server(app)
-// const io = require('socket.io')(http)
+const cookieParser = require("cookie-parser");
 
 mongoose.connect(config.DB, { useNewUrlParser: true }).then(
     function () {
@@ -20,6 +19,7 @@ app.use(passport.initialize());
 require("./passport")(passport);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cookieParser())
 
 app.use("/api/auth", router); // < ======= HERE WAS THE ERROR, i was using ./api/users
 
