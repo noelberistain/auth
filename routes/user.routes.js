@@ -92,12 +92,10 @@ console.log("req.query = \n",req.query, "user ID= \n",userId)
 });
 
 router.post("/register", (req, res) => {
-    const { email,name,password,errors, isValid } = validateRegisterInput(req.body);
+    const { errors, isValid } = validateRegisterInput(req.body);
     if (!isValid) return res.status(400).json(errors);
-
     User.findOne({
-        // email: req.body.email
-        email
+        email: req.body.email
     }).then(user => {
         // console.log("USER, from ROUTER.POST / resgister:  ", user)
         if (user) {
@@ -111,14 +109,10 @@ router.post("/register", (req, res) => {
                 d: "mm"
             });
             const newUser = new User({
-                name,
-                email,
-                password,
+                name: req.body.name,
+                email: req.body.email,
+                password: req.body.password,
                 avatar
-                // name: req.body.name,
-                // email: req.body.email,
-                // password: req.body.password,
-                // avatar
             });
 
             bcrypt.genSalt(10, (err, salt) => {
