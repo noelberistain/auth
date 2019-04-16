@@ -18,6 +18,10 @@ const UserSchema = new Schema({
     avatar: {
         type: String
     },
+    lang:{
+        type: String,
+        default: 'en-US'
+    },
     date: {
         type: Date,
         default: Date.now

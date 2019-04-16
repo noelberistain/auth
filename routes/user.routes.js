@@ -3,6 +3,7 @@ const router = express.Router();
 const gravatar = require("gravatar");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const jwt_decode = require("jwt-decode");
 const validateRegisterInput = require("../validation/register");
 const validateLoginInput = require("../validation/login");
 const checkToken = require("../validation/checkToken")
@@ -93,6 +94,7 @@ console.log("req.query = \n",req.query, "user ID= \n",userId)
 
 router.post("/register", (req, res) => {
     const { errors, isValid } = validateRegisterInput(req.body);
+
     if (!isValid) return res.status(400).json(errors);
     User.findOne({
         email: req.body.email
@@ -108,10 +110,13 @@ router.post("/register", (req, res) => {
                 r: "pg",
                 d: "mm"
             });
+            if(req.body.preferredLang == '') lang = 'en-US';
+            else { lang = req.body.preferredLang}
             const newUser = new User({
                 name: req.body.name,
                 email: req.body.email,
                 password: req.body.password,
+                lang: lang,
                 avatar
             });
 
@@ -137,6 +142,21 @@ router.post("/friendsInfo", (req, res) => {
     User.find( { _id: {$in : req.body}},{password:0,date:0} )
     .then(response => res.json(response))
     .catch(e=>console.log(e))
-})
+});
+
+router.get("/lang", (req,res)=>{
+    const header = req.headers.cookie;
+    if(typeof header !== 'undefined') {
+        const n = header.split(';')
+        const aux = n.find(item => item.includes('jwToken'))
+        user = jwt_decode(aux)
+        User.findOne(
+            {_id:user.id},{lang:1}
+        )
+            .then(({lang}) => {
+                return res.json(lang)
+            })
+    }
+});
 
 module.exports = router;

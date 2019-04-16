@@ -1,5 +1,5 @@
-// export const DB = 'mongodb://localhost:27012/auth';
+// export const DB = 'mongodb://localhost:27017/auth';
 
 module.exports = {
-    DB: 'mongodb://localhost:27017/auth'
+    DB: 'mongodb://mongo:27017/auth'
 }
