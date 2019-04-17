@@ -32,6 +32,7 @@ spec:
       containers:
       - name: auth
         image: noelberistain/auth
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
           name: http
