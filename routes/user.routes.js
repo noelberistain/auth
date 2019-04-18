@@ -6,8 +6,8 @@ const jwt = require("jsonwebtoken");
 const jwt_decode = require("jwt-decode");
 const validateRegisterInput = require("../validation/register");
 const validateLoginInput = require("../validation/login");
-const checkToken = require("../validation/checkToken")
-const secret = require('../config/secret');
+const checkToken = require("../validation/checkToken");
+const secret = require("../config/secret");
 
 const User = require("../models/User.model");
 
@@ -19,7 +19,8 @@ router.post("/login", (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
 
-    User.findOne({ email }).then(user => {
+    User.findOne({ email })
+    .then(user => {
         if (!user) {
             errors.email = "User not found";
             return res.status(404).json(errors);
@@ -27,68 +28,68 @@ router.post("/login", (req, res) => {
         bcrypt.compare(password, user.password).then(isMatch => {
             if (isMatch) {
                 const payload = { id: user.id };
-                jwt.sign(
-                    payload,
-                    secret.key,
-                    (err, token) => {
-                        if (err) console.error("There is some error in token", err);
-                        else {
-                            // let x = { name, avatar, email, _id} = user
-                            res.cookie('jwToken',token,{httpOnly:true})
-                            res.json({
-                                success: true
-                            });
-                        }
+                jwt.sign(payload, secret.key, (err, token) => {
+                    if (err) console.error("There is some error in token", err);
+                    else {
+                        res.cookie("jwToken", token, { httpOnly: true });
+                        res.json({
+                            success: true
+                        });
                     }
-                );
+                });
             } else {
                 errors.password = "Incorrect Password";
                 return res.status(400).json(errors);
             }
         });
     })
-    // .then(res=>{res.json('fdsa')})?
+    .catch(e=>console.log("err at login, ln 46", e))
 });
 
 router.get("/validatingUser", checkToken, (req, res) => {
-    let userId = '';
+    let userId = "";
     jwt.verify(req.token, secret.key, (err, authorizedData) => {
-        //If token is successfully verified, we can send the autorized data 
-        if (err) console.log(err)
+        //If token is successfully verified, we can send the autorized data
+        if (err) console.log(err);
         else {
             userId = authorizedData.id;
         }
-    })
-console.log("req.query = \n",req.query, "user ID= \n",userId)
-    if (Object.entries(req.query).length === 0 && req.query.constructor === Object) {
-        console.log("verifyn ACTIVE user")
+    });
+    console.log("req.query = \n", req.query, "user ID= \n", userId);
+    if (
+        Object.entries(req.query).length === 0 &&
+        req.query.constructor === Object
+    ) {
+        console.log("verifyn ACTIVE user");
         User.findOne({ _id: userId }, { password: 0, date: 0 })
             .then(info => {
                 if (!info) {
-                    console.log("info WASN'T FOUND")
-                    return res.status(404).json(errors)
+                    console.log("info WASN'T FOUND");
+                    return res.status(404).json(errors);
+                } else {
+                    console.log("-- - - - - - - - - - - - - -\n", info);
+                    res.json(info);
                 }
-                else {
-                    console.log("-- - - - - - - - - - - - - -\n",info)
-                    res.json(info)
-                }
-            }).catch(err => {
-                console.log('ERRORS, NOT FOUND =======>>>>>>>>>>>>>>>>>>>>>>>>>>', err);
-                return res.json(err);
             })
-    }
-    else {
-        console.log("find-return data from sended user", req.query)
+            .catch(err => {
+                console.log(
+                    "ERRORS, NOT FOUND =======>>>>>>>>>>>>>>>>>>>>>>>>>>",
+                    err
+                );
+                return res.json(err);
+            });
+    } else {
+        console.log("find-return data from sended user", req.query);
         User.findOne(req.query)
             .then(friend => {
-                if(!friend){
-                    res.json(' DOESNT EXIST AT CHAT APP ')
+                if (!friend) {
+                    res.json(" DOESNT EXIST AT CHAT APP ");
                 }
-                console.log(friend)
-                const { _id, name, email, avatar } = friend
-                res.json({ _id, name, email, avatar, userId })
+                console.log(friend);
+                const { _id, name, email, avatar } = friend;
+                res.json({ _id, name, email, avatar, userId });
             })
-            .catch(e => console.log(e))
+            .catch(e => console.log(e));
     }
 });
 
@@ -110,8 +111,10 @@ router.post("/register", (req, res) => {
                 r: "pg",
                 d: "mm"
             });
-            if(req.body.preferredLang == '') lang = 'en-US';
-            else { lang = req.body.preferredLang}
+            if (req.body.preferredLang == "") lang = "en-US";
+            else {
+                lang = req.body.preferredLang;
+            }
             const newUser = new User({
                 name: req.body.name,
                 email: req.body.email,
@@ -139,24 +142,26 @@ router.post("/register", (req, res) => {
 });
 
 router.post("/friendsInfo", (req, res) => {
-    User.find( { _id: {$in : req.body}},{password:0,date:0} )
-    .then(response => res.json(response))
-    .catch(e=>console.log(e))
+    User.find({ _id: { $in: req.body } }, { password: 0, date: 0 })
+        .then(response => res.json(response))
+        .catch(e => console.log(e));
 });
 
-router.get("/lang", (req,res)=>{
+router.get("/lang", (req, res) => {
     const header = req.headers.cookie;
-    if(typeof header !== 'undefined') {
-        const n = header.split(';')
-        const aux = n.find(item => item.includes('jwToken'))
-        user = jwt_decode(aux)
-        User.findOne(
-            {_id:user.id},{lang:1}
-        )
-            .then(({lang}) => {
-                return res.json(lang)
-            })
+    if (typeof header !== "undefined") {
+        const n = header.split(";");
+        const aux = n.find(item => item.includes("jwToken"));
+        user = jwt_decode(aux);
+        User.findOne({ _id: user.id }, { lang: 1 }).then(({ lang }) => {
+            return res.json(lang);
+        });
     }
 });
+
+router.get("/test", (req,res)=>{
+    console.log("this is a test")
+    res.json(`test`)
+})
 
 module.exports = router;
