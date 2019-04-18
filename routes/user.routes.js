@@ -138,7 +138,8 @@ router.post("/register", (req, res) => {
                 }
             });
         }
-    });
+    })
+    .catch(e => console.log(e));
 });
 
 router.post("/friendsInfo", (req, res) => {
@@ -153,9 +154,11 @@ router.get("/lang", (req, res) => {
         const n = header.split(";");
         const aux = n.find(item => item.includes("jwToken"));
         user = jwt_decode(aux);
-        User.findOne({ _id: user.id }, { lang: 1 }).then(({ lang }) => {
+        User.findOne({ _id: user.id }, { lang: 1 })
+        .then(({ lang }) => {
             return res.json(lang);
-        });
+        })
+        .catch(e => console.log(e));
     }
 });
 
