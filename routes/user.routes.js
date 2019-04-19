@@ -155,11 +155,11 @@ router.get("/lang", (req, res) => {
         const aux = n.find(item => item.includes("jwToken"));
         user = jwt_decode(aux);
         User.findOne({ _id: user.id }, { lang: 1 })
-        .then( ({lang}) => {
-            console.log(lang)
-            if(lang) lang
+        .then( user => {
+            if(user) lang;
             else lang = 'en-US';
-
+            
+            console.log("ready to send - ",lang)
             res.json(lang);
         })
         .catch(e => console.log(e));
